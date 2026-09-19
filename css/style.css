@@ -81,7 +81,7 @@ body {
 /* ---------- Каркас страницы ---------- */
 
 .page {
-  width: min(96vw, 790px);
+  width: min(96vw, 1080px);   /* всегда шире поля + колонка усилений — без скачков при смене режима */
   min-height: 100%;
   padding: 10px 8px 14px;
   display: flex;
@@ -207,6 +207,11 @@ body {
     0 0 70px rgba(125, 255, 90, .12),
     inset 0 0 24px rgba(0, 229, 255, .05);
   line-height: 0;
+  /* flex-каркас: базовая ширина 720, ужимается при нехватке места,
+     кап по высоте окна — поле всегда влезает на экран */
+  flex: 0 1 720px;
+  min-width: 260px;
+  max-width: calc((100vh - 235px) * .7826 + 20px);
 }
 @keyframes neonFlow { to { background-position: 0 0, 300% 0; } }
 
@@ -222,7 +227,7 @@ body {
 canvas#game {
   display: block;
   border-radius: 10px;
-  width: min(100%, calc((100vh - 235px) * .7826));
+  width: 100%;
   aspect-ratio: 720 / 920;
   height: auto;
   touch-action: none;
@@ -502,6 +507,308 @@ kbd {
   letter-spacing: .03em;
 }
 
+/* ---------- Строка игры: поле + панель усилений ---------- */
+
+.gameRow {
+  display: flex;
+  flex-wrap: nowrap;          /* панель усилений всегда строго справа от поля */
+  gap: 14px;
+  justify-content: center;
+  align-items: flex-start;
+  width: 100%;
+}
+
+/* Колонка усилений: всегда занимает своё место справа от поля.
+   Внутри две «карточки» в одной grid-ячейке — сообщение (режим мыши)
+   и сама панель (режим стрелок). Смена режима — плавный сиквенс:
+   сначала растворяется ушедшее (0.3 с), затем проявляется
+   пришедшее (ещё ~0.45 с); итого ~0.75 с. */
+.powerPanel {
+  display: grid;
+  flex: 0 0 252px;
+  width: 252px;
+}
+.powerPanel > * { grid-area: 1 / 1; }
+
+.pw-hint, .pw-body {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  box-shadow: 0 0 18px rgba(0, 229, 255, .1), inset 0 0 12px rgba(0, 229, 255, .04);
+}
+
+/* --- сообщение в режиме мыши --- */
+.pw-hint {
+  display: flex;
+  flex-direction: column;
+  padding: 12px 12px 14px;
+  opacity: 1;
+  visibility: visible;
+  transition: opacity .45s ease .32s, visibility 0s linear 0s;
+}
+.pw-hint-mid {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  text-align: center;
+  padding: 6px 4px;
+}
+.pw-hint-arrows {
+  font-size: 22px;
+  line-height: 1;
+  color: var(--cyan);
+  text-shadow: 0 0 14px rgba(0, 229, 255, .75);
+  animation: hintPulse 2.6s ease-in-out infinite;
+}
+@keyframes hintPulse {
+  0%, 100% { opacity: .5; letter-spacing: 1px; }
+  50%      { opacity: 1; letter-spacing: 6px; }
+}
+.pw-hint p {
+  font: 400 12.5px/1.6 'Rubik', sans-serif;
+  color: var(--muted);
+}
+.pw-hint p b { color: var(--text); font-weight: 600; }
+
+/* --- панель усилений в режиме стрелок --- */
+.pw-body {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 12px 12px 14px;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity .3s ease, visibility 0s linear .3s;
+}
+
+body.keys-ctrl .pw-hint {
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity .3s ease, visibility 0s linear .3s;
+}
+body.keys-ctrl .pw-body {
+  opacity: 1;
+  visibility: visible;
+  transition: opacity .45s ease .32s, visibility 0s linear 0s;
+}
+
+.pw-side-title {
+  font-family: 'Orbitron', monospace;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: .14em;
+  color: var(--text);
+  text-align: center;
+  text-shadow: 0 0 12px rgba(0, 229, 255, .6);
+  margin-bottom: 4px;
+}
+
+.pw-group {
+  font-family: 'Orbitron', monospace;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: .14em;
+  color: var(--pw-color);
+  margin: 8px 2px 4px;
+  padding-bottom: 3px;
+  border-bottom: 1px dashed var(--pw-color);
+  opacity: .9;
+}
+
+.pw-btn {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(4, 8, 14, .6);
+  border: 1px solid rgba(255, 255, 255, .08);
+  border-left: 3px solid var(--pw-color);
+  border-radius: 8px;
+  padding: 7px 9px;
+  cursor: pointer;
+  text-align: left;
+  color: var(--text);
+  font: 600 11.5px 'Rubik', sans-serif;
+  transition: background .12s ease, border-color .12s ease, transform .12s ease;
+}
+.pw-btn .pw-name { flex: 1; }
+.pw-btn .pw-cnt {
+  color: var(--pw-color);
+  font: 700 11px 'Orbitron', monospace;
+  text-shadow: 0 0 8px var(--pw-color);
+}
+.pw-btn:hover {
+  background: rgba(0, 229, 255, .08);
+  border-color: var(--pw-color);
+  transform: translateX(-2px);
+}
+.pw-btn.off { opacity: .32; pointer-events: none; filter: grayscale(.5); }
+
+/* неизвестные усиления слегка «глючат» */
+.pw-btn[data-pw="globdtr"], .pw-btn[data-pw="buffgv"] {
+  animation: pwGlitch 3.4s steps(1) infinite;
+}
+@keyframes pwGlitch {
+  0%, 91%  { filter: none; }
+  92%      { filter: hue-rotate(80deg) brightness(1.5); }
+  94%      { filter: none; }
+  96%      { filter: hue-rotate(-70deg); }
+  98%      { filter: none; }
+}
+
+/* всплывающее описание слева от кнопки */
+.pw-tip {
+  display: none;
+  position: absolute;
+  right: calc(100% + 12px);
+  top: 0;
+  z-index: 30;
+  width: 250px;
+  background: rgba(6, 10, 18, .97);
+  border: 1px solid var(--pw-color);
+  border-radius: 10px;
+  padding: 10px 12px;
+  font: 400 11px/1.45 'Rubik', sans-serif;
+  color: var(--muted);
+  box-shadow: 0 0 18px rgba(0, 229, 255, .15);
+  pointer-events: none;
+}
+.pw-btn:hover .pw-tip { display: block; }
+.pw-tip i { color: #9dffb0; }
+
+/* ---------- Окно усилений в паузе ---------- */
+
+.pw-list {
+  max-height: 46vh;
+  overflow-y: auto;
+  margin: 4px 0 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  text-align: left;
+}
+.pw-list .pw-group { position: sticky; top: 0; background: rgba(10, 16, 28, .97); z-index: 1; border-radius: 4px; padding: 4px 6px 4px; }
+
+/* идёт действие усиления — таблица закрыта до его конца */
+.pw-busy {
+  margin: 2px 0 10px;
+  padding: 7px 11px;
+  border: 1px dashed rgba(255, 179, 71, .55);
+  border-radius: 8px;
+  background: rgba(255, 179, 71, .07);
+  color: #ffb347;
+  font: 600 11px/1.45 'Rubik', sans-serif;
+  text-align: center;
+}
+
+.pw-row {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  background: rgba(4, 8, 14, .6);
+  border: 1px solid rgba(255, 255, 255, .08);
+  border-left: 3px solid var(--pw-color);
+  border-radius: 10px;
+  padding: 8px 11px;
+  cursor: pointer;
+  color: var(--text);
+  transition: background .12s ease, border-color .12s ease;
+}
+.pw-row:hover { background: rgba(0, 229, 255, .07); border-color: var(--pw-color); }
+.pw-row.off { opacity: .35; pointer-events: none; }
+
+.pw-head { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
+.pw-head b { font: 700 12.5px 'Rubik', sans-serif; }
+.pw-head i {
+  font: 700 11px 'Orbitron', monospace;
+  font-style: normal;
+  color: var(--pw-color);
+  text-shadow: 0 0 8px var(--pw-color);
+  white-space: nowrap;
+}
+.pw-desc { font: 400 10.5px/1.4 'Rubik', sans-serif; color: var(--muted); }
+.pw-how { display: block; margin-top: 3px; color: #9dffb0; font-style: italic; }
+
+/* ---------- Предупреждение о запуске усиления ---------- */
+
+.pw-warn {
+  background: rgba(4, 8, 14, .55);
+  border: 1px solid rgba(255, 179, 71, .35);
+  border-radius: 12px;
+  padding: 13px 15px;
+  font: 400 12px/1.55 'Rubik', sans-serif;
+  color: var(--muted);
+  margin: 4px 0 12px;
+  text-align: left;
+}
+.pw-warn b { color: var(--text); }
+
+.pw-check {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin: 0 0 16px;
+  font: 400 12px 'Rubik', sans-serif;
+  color: var(--text);
+  cursor: pointer;
+}
+.pw-check input { accent-color: var(--cyan); width: 15px; height: 15px; cursor: pointer; }
+
+.pw-open { margin-top: 10px; }
+
+/* чип активных эффектов */
+.chip.fxc b {
+  color: #ffd24d;
+  font-size: 11px;
+  text-shadow: 0 0 8px rgba(255, 200, 60, .6);
+}
+
+/* ---------- Скроллбары в неоновой теме ---------- */
+
+/* Firefox */
+html {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 229, 255, .55) rgba(6, 10, 18, .85);
+}
+
+/* Blink / WebKit (страница, окно усилений в паузе и всё прочее) */
+::-webkit-scrollbar { width: 11px; height: 11px; }
+::-webkit-scrollbar-track {
+  background: rgba(6, 10, 18, .85);
+  box-shadow: inset 0 0 6px rgba(0, 0, 0, .55);
+}
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, rgba(0, 229, 255, .75), rgba(125, 255, 90, .6));
+  border-radius: 8px;
+  border: 2px solid rgba(6, 10, 18, .85);
+  box-shadow: 0 0 10px rgba(0, 229, 255, .4);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, rgba(0, 229, 255, 1), rgba(125, 255, 90, .85));
+  box-shadow: 0 0 14px rgba(0, 229, 255, .65);
+}
+::-webkit-scrollbar-thumb:active {
+  background: linear-gradient(180deg, rgba(125, 255, 90, 1), rgba(0, 229, 255, .9));
+}
+::-webkit-scrollbar-corner { background: transparent; }
+
+/* списку усилений в паузе — чуть уже и с подсвеченной дорожкой */
+.pw-list { scrollbar-width: thin; scrollbar-color: rgba(0, 229, 255, .6) rgba(4, 8, 14, .9); }
+.pw-list::-webkit-scrollbar { width: 9px; }
+.pw-list::-webkit-scrollbar-track {
+  background: rgba(4, 8, 14, .9);
+  border-radius: 6px;
+  box-shadow: inset 0 0 5px rgba(0, 229, 255, .12);
+}
+.pw-list::-webkit-scrollbar-thumb {
+  border: none;
+  border-radius: 6px;
+}
+
 /* ---------- Режим управления «стрелки»: курсор видим ---------- */
 
 canvas#game.keys-mode { cursor: default; }
@@ -509,6 +816,19 @@ canvas#game.keys-mode { cursor: default; }
 .hidden { display: none !important; }
 
 /* ---------- Адаптивность ---------- */
+
+/* узкие экраны: колонка усилений переезжает под поле,
+   сообщение о переключении не нужно, панель видна без фейдов */
+@media (max-width: 620px) {
+  .gameRow { flex-wrap: wrap; }
+  .powerPanel { display: block; flex: 1 1 100%; width: auto; }
+  .pw-hint { display: none; }
+  .pw-body {
+    opacity: 1;
+    visibility: visible;
+    transition: none;
+  }
+}
 
 @media (max-width: 560px) {
   .topbar { justify-content: center; }
@@ -518,4 +838,6 @@ canvas#game.keys-mode { cursor: default; }
 
 @media (prefers-reduced-motion: reduce) {
   .bg-fx::before, .bg-fx::after, .logo, .frame, .panel::before { animation: none; }
+  .pw-hint, .pw-body { transition: none; }
+  .pw-hint-arrows { animation: none; }
 }

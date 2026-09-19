@@ -14,10 +14,16 @@
     '%cНЕОН·АРКАНОИД%c загружен\n' +
     'Отладка: %cpickLayoutForStage(этап 1–5, расстановка 0–5)%c\n' +
     '0 — rigged · 1 — строки · 2 — столбцы · 3 — хаос · 4 — сетка · 5 — зигзаг\n' +
-    'Enter — запуск шара · Esc — пауза · ЛКМ — мышь/стрелки · Пробел — автопилот.',
+    'Усиления: %cGame.activatePower(id)%c — life, rogue, split, paddle, gators, boss,\n' +
+    'bomb, elephant, fist, globdtr, buff.gv · инвентарь: %cPowers.counts%c\n' +
+    'Enter — запуск · Esc — пауза/усиления · ЛКМ — мышь/стрелки · Пробел — автопилот.',
     'font-weight:700;color:#7dff5a;text-shadow:0 0 8px #00e5ff',
     'color:inherit',
     'color:#00e5ff;font-weight:600',
+    'color:inherit',
+    'color:#9dffb0;font-weight:600',
+    'color:inherit',
+    'color:#9dffb0;font-weight:600',
     'color:inherit'
   );
 

@@ -25,19 +25,32 @@
     <div class="chip">ЭТАП <b id="stageVal">–</b></div>
     <div class="chip">ЖИЗНИ <span class="lives" id="livesVal">–</span></div>
     <div class="chip">РАССТАНОВКА <b id="layoutVal">–</b></div>
+    <div class="chip fxc hidden" id="fxChip">ЭФФЕКТЫ <b></b></div>
     <div class="chip auto hidden" id="autoChip">АВТОПИЛОТ</div>
     <button class="btn btn-ghost" id="restartBtn" title="Начать игру заново с 1-го этапа">⟲ Заново</button>
   </div>
 
-  <div class="frame" id="frameWrap">
-    <canvas id="game" width="720" height="920"></canvas>
-    <div class="banner" id="banner"></div>
+  <div class="gameRow">
+    <div class="frame" id="frameWrap">
+      <canvas id="game" width="720" height="920"></canvas>
+      <div class="banner" id="banner"></div>
+    </div>
+    <aside class="powerPanel" id="powerPanel" aria-label="Усиления">
+      <div class="pw-hint">
+        <div class="pw-side-title">УСИЛЕНИЯ</div>
+        <div class="pw-hint-mid">
+          <div class="pw-hint-arrows" aria-hidden="true">◀&nbsp;▶</div>
+          <p>Здесь также будут твои усиления, когда&nbsp;переключишься на&nbsp;управление стрелками, если&nbsp;что.</p>
+        </div>
+      </div>
+      <div class="pw-body" id="pwBody"></div>
+    </aside>
   </div>
 
   <footer class="hints">
     <span id="ctrlHint"><kbd>Мышь</kbd> платформа · <kbd>ЛКМ</kbd> → стрелки</span>
     <span><kbd>Enter</kbd> запуск шара</span>
-    <span><kbd>Esc</kbd> пауза</span>
+    <span><kbd>Esc</kbd> пауза · усиления</span>
     <span><kbd>Пробел</kbd> автопилот (тест)</span>
     <span><kbd>F12</kbd> pickLayoutForStage(этап, 0–5)</span>
   </footer>
@@ -49,6 +62,7 @@
 
 <script src="js/config.js"></script>
 <script src="js/layouts.js"></script>
+<script src="js/powers.js"></script>
 <script src="js/game.js"></script>
 <script src="js/ui.js"></script>
 <script src="js/debug.js"></script>
